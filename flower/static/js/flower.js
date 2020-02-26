@@ -25,6 +25,7 @@ var flower = (function () {
     function url_prefix() {
         var url_prefix = $('#url_prefix').val();
         if (url_prefix) {
+            url_prefix = url_prefix.replace(/\/+$/, '');
             if (url_prefix.startsWith('/')) {
                 return url_prefix;
             } else {
@@ -250,20 +251,21 @@ var flower = (function () {
         event.preventDefault();
         event.stopPropagation();
 
-        var workername = $('#workername').text(),
+        var post_data = {
+                'workername': $('#workername').text()
+            },
             taskname = $(event.target).closest("tr").children("td:eq(0)").text(),
+            type = $(event.target).text().toLowerCase(),
             timeout = $(event.target).siblings().closest("input").val();
 
         taskname = taskname.split(' ')[0]; // removes [rate_limit=xxx]
+        post_data[type] = timeout;
 
         $.ajax({
             type: 'POST',
             url: url_prefix() + '/api/task/timeout/' + taskname,
             dataType: 'json',
-            data: {
-                'workername': workername,
-                'type': timeout,
-            },
+            data: post_data,
             success: function (data) {
                 show_success_alert(data.message);
             },
@@ -725,6 +727,7 @@ var flower = (function () {
             serverSide: true,
             colReorder: true,
             ajax: {
+                type: 'POST',
                 url: url_prefix() + '/tasks/datatable'
             },
             order: [
